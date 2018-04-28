@@ -15,6 +15,7 @@ Simple and easy to use tool to scan for hosts listening ports.
 ## Author
 
 * **Enrique Serrano** - *Telecommunications Engineering student*
+* **Javier Artiga** - *Telecommunications Engineering student*
 
 ## Terms & Conditions
 
