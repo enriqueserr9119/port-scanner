@@ -1,5 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# original version by Enrique Serrano, modified by @jartigag
+#
+# All code in this project is provided for illustrative and educational purposes only. The code has not been thoroughly tested under all conditions.
+# Therefore, no reliability is guaranteed and any damage resulting from using this tool is disclaimed. 
+# All code is provided to you "AS IS" without any warranties of any kind.
+# You can redistribute it and/or modify it under your responsability.
+
 from bs4 import BeautifulSoup
 import urllib2
+import csv
 
 class Port:
 	"""
@@ -26,10 +36,10 @@ def getPortFromHTML(html):
 
 	# Extract port number and trim HTML
 	portNum = extract(html, '<tr><td>', '</td>')
-	html = trim(html, '</td>')
+	html = endtrim(html, '</td>')
 	# Extract port service and trim HTML
 	service = extract(html, '<td>', '</td>')
-	html = trim(html, '</td>')
+	html = endtrim(html, '</td>')
 	# Extract port service details
 	details = extract(html, '<td>', '</td></tr>', ommitSpaces=False)
 
@@ -57,9 +67,9 @@ def extract(s, startDelimiter, finalDelimiter, ommitSpaces=True):
 	else:
 		return s[start:end].strip('\n\t')
 
-def trim(s, finalDelimiter):
+def endtrim(s, startDelimiter):
 	"""
-	This function trims a string from position 0 to the delimiter passed as a parameter
+	This function trims a string from the delimiter passed as a parameter to end position
 
 	:param s: string with the HTML code
 	:param finalDelimiter: HTML tag or tags indicating how far to trim
@@ -67,12 +77,40 @@ def trim(s, finalDelimiter):
 	:return obj 'str': returns a trimmed version of param "s"
 	"""
 
-	# End position
-	delimiter = s.index(finalDelimiter) + len(finalDelimiter)
-	# Return trimmed HTML code
-	return s[delimiter:]
+	try:
+		# Start position
+		delimiter = s.index(startDelimiter) + len(startDelimiter)
+		# Return trimmed HTML code
+		return s[delimiter:]
+	except ValueError as e:
+		# startDelimiter is not in s
+		return s
+
+def starttrim(s, finalDelimiter):
+	"""
+	This function trims a string from position 0 to the delimiter passed as a parameter
+
+	:param s: string with the HTML code
+	:param finalDelimiter: HTML tag or tags indicating where to start to trim
+
+	:return obj 'str': returns a trimmed version of param "s"
+	"""
+
+	try:
+		# End position
+		delimiter = s.index(finalDelimiter) + len(finalDelimiter) - 1
+		# Return trimmed HTML code
+		return s[:delimiter]
+	except ValueError as e:
+		# finalDelimiter is not in s
+		return s
 
 def parsePorts():
+	"""
+	This function gets a list of all well-known ports (TCP and UPD)
+
+	:return obj 'allPorts': returns an array. each element is a string with a port and which service or protocol uses it
+	"""
 
 	allPorts = []
 
@@ -87,3 +125,23 @@ def parsePorts():
 
 	# Return filled array
 	return allPorts
+
+def dumpPortsInCSV(array,file):
+	"""
+	This function dumps an array of Ports into a .csv file
+
+	:param array: array with the Port objects
+	:param file: target file
+
+	:return true if everything is fine, false if there was any error
+	"""
+
+	try:
+		with open(file, "wb") as outfile:
+			writer = csv.writer(outfile, delimiter=',')
+			for port in array:
+				writer.writerow([starttrim(port.portNum,"/"),port.service,port.details]) # trimming needed for cases such as "102/tcp"
+		return True
+	except Exception as e:
+		print(e)
+		return False
