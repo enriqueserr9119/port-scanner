@@ -10,20 +10,7 @@
 from bs4 import BeautifulSoup
 import urllib2
 import csv
-
-class Port:
-	"""
-	This class defines a port info.
-	"""
-	def __init__(self, portNum, service, details):
-		"""
-		:param portNum: port number
-		:param service: port service
-		:param details: port service details
-		"""
-		self.portNum = portNum
-		self.service = service
-		self.details = details
+from portScanner import Port
 
 def getPortFromHTML(html):
 	"""

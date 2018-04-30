@@ -11,6 +11,8 @@
 	You can redistribute it and/or modify it under your responsability.
 """
 
+#TODO: apparently some scanPort threads never end. why?
+
 import socket
 import urllib2
 import os
@@ -19,7 +21,22 @@ import sys
 import time
 import subprocess
 from threading import Thread
+import csv
 import portHtmlParser
+
+class Port:
+	"""
+	This class defines a port info.
+	"""
+	def __init__(self, portNum, service, details):
+		"""
+		:param portNum: port number
+		:param service: port service
+		:param details: port service details
+		"""
+		self.portNum = portNum
+		self.service = service
+		self.details = details
 
 def binarySearch(targetPortNum, start, end):
 	"""
@@ -64,7 +81,6 @@ def scanPort(hostIP, portNum):
 
 	# Create socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	#TODO: HANDLE WITH "[Errno 24] Too many open files"
 
 	# Check if port is listening
 	if s.connect_ex((hostIP, portNum)) == 0:
@@ -72,7 +88,7 @@ def scanPort(hostIP, portNum):
 		port = binarySearch(portNum, 0, len(allPorts))
 		if port != None:
 			print("  - %s (%s) --> %s\n" % (port.service, port.portNum, port.details))
-		s.close()
+	s.close()
 
 if __name__ == "__main__":
 
@@ -112,9 +128,18 @@ if __name__ == "__main__":
 	print("\n\n *************** LISTENING PORTS *************** \n")
 
 	# All well-known ports (1-1024)
-	allPorts = portHtmlParser.parsePorts()
+
+	# Option 1: parsing directly from web.mit.edu
+	#allPorts = portHtmlParser.parsePorts()
+	# Option 2: getting port info from csv file
+	allPorts = []
+	with open('ports.csv', "rb") as f:
+		reader = csv.reader(f)
+		for row in reader:
+			port = Port(row[0], row[1], row[2])
+			allPorts.append(port)
 
 	# Check which well-known ports are listening
-	for portNum in range(1,1025):
-		thread = Thread(target = scanPort, args = (hostIP, portNum))
+	for port in allPorts:
+		thread = Thread(target = scanPort, args = (hostIP, int(port.portNum)))
 		thread.start()
