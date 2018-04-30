@@ -69,12 +69,12 @@ def binarySearch(targetPortNum, start, end):
 			# Look for the port number in the left.
 			return binarySearch(targetPortNum, start, mid - 1)
 
-def scanPort(hostIP, portNum):
+def scanPort(hostIP, port):
 	"""
 	This function checks if a specified port is listening.
 
 	:param hostIP: target host IP address
-	:param portNum: port number
+	:param port: Port object
 
 	:return: returns nothing
 	"""
@@ -83,11 +83,11 @@ def scanPort(hostIP, portNum):
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	# Check if port is listening
-	if s.connect_ex((hostIP, portNum)) == 0:
+	if s.connect_ex((hostIP, int(port.portNum))) == 0:
 		# Get port info
-		port = binarySearch(portNum, 0, len(allPorts))
-		if port != None:
-			print("  - %s (%s) --> %s\n" % (port.service, port.portNum, port.details))
+		#port = binarySearch(portNum, 0, len(allPorts)) ##TODO: is this function necessary?
+		#if port != None:
+		print("  - %s (%s) --> %s\n" % (port.service, port.portNum, port.details))
 	s.close()
 
 if __name__ == "__main__":
@@ -141,5 +141,5 @@ if __name__ == "__main__":
 
 	# Check which well-known ports are listening
 	for port in allPorts:
-		thread = Thread(target = scanPort, args = (hostIP, int(port.portNum)))
+		thread = Thread(target = scanPort, args = (hostIP, port))
 		thread.start()
