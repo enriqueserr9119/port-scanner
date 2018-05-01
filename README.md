@@ -12,7 +12,7 @@ Simple and easy to use tool to scan for hosts listening ports.
 
  ~/$ python portScanner.py
 
-## Author
+## Authors
 
 * **Enrique Serrano** - *Telecommunications Engineering student*
 * **Javier Artiga** - *Telecommunications Engineering student*

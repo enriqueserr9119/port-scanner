@@ -1,6 +1,6 @@
 """
 	File name: portScanner.py
-	Author: Enrique Serrano
+	Author: Enrique Serrano, Javier Artiga
 	Date created: 04/15/2018
 	Date last modified: 04/15/2018
 	Python version: 2.7
@@ -38,37 +38,6 @@ class Port:
 		self.service = service
 		self.details = details
 
-def binarySearch(targetPortNum, start, end):
-	"""
-	This function implements a binary search algorithm to find a port in the sorted "allPorts" list.
-
-	:param targetPortNum: port number to find
-	:param start: list position to start the search
-	:param end: list position to finish the search
-
-	:return obj 'Port': returns the port object matching the given target port number.
-						Returns None in case the target port number is not found.
-	"""
-
-	# Get mid position port number
-	mid = start + (end-start)/2
-	num = int(allPorts[mid].portNum)
-	# Try to find the port number in the list
-	if end-start == 0:
-		if num == targetPortNum:
-			return allPorts[mid]
-		else:
-			return None
-	elif end-start > 0:
-		if num == targetPortNum:
-			return allPorts[mid]
-		elif num < targetPortNum:
-			# Look for the port number in the right.
-			return binarySearch(targetPortNum, mid + 1, end)
-		elif num > targetPortNum:
-			# Look for the port number in the left.
-			return binarySearch(targetPortNum, start, mid - 1)
-
 def scanPort(hostIP, port):
 	"""
 	This function checks if a specified port is listening.
@@ -85,10 +54,10 @@ def scanPort(hostIP, port):
 	# Check if port is listening
 	if s.connect_ex((hostIP, int(port.portNum))) == 0:
 		# Get port info
-		#port = binarySearch(portNum, 0, len(allPorts)) ##TODO: is this function necessary?
-		#if port != None:
-		print("  - %s (%s) --> %s\n" % (port.service, port.portNum, port.details))
+		listeningPorts.append(port)
 	s.close()
+
+listeningPorts = []
 
 if __name__ == "__main__":
 
@@ -102,17 +71,16 @@ if __name__ == "__main__":
 		# Check if the user's input is a valid IP address
 		if pattern.match(hostIP):
 			time.sleep(1.2)
-			print("\n Checking host connection...\n")
-			time.sleep(2)
+			print("\n Checking host connection...")
 			# Check if host is alive (ping)
 			p = subprocess.Popen(["ping", "-q", "-c", "3", hostIP], stdout = subprocess.PIPE, stderr=subprocess.PIPE) # discard stdout, stderr
 			lostPackets = p.wait()
 			if not lostPackets:
 				time.sleep(1.2)
-				print("\n\n SUCCESS: Host is up")
+				print("\n * SUCCESS: Host is up")
 				break
 			else:
-				print("\n ** Host is not alive")
+				print("\n * FAILED: Host is not alive")
 				sys.exit("\n Execution stopped\n")
 		else:
 			print("\n\t** ERROR: not valid IP address")
@@ -124,14 +92,12 @@ if __name__ == "__main__":
 			else:
 				sys.exit("\n\t** ERROR: not valid option %s\n" % again)
 
-
-	print("\n\n *************** LISTENING PORTS *************** \n")
+	time.sleep(1.2)
+	print("\n Looking for listening ports...")
+	time.sleep(1.2)
 
 	# All well-known ports (1-1024)
-
-	# Option 1: parsing directly from web.mit.edu
-	#allPorts = portHtmlParser.parsePorts()
-	# Option 2: getting port info from csv file
+	# Get port info from CSV file
 	allPorts = []
 	with open('ports.csv', "rb") as f:
 		reader = csv.reader(f)
@@ -143,3 +109,12 @@ if __name__ == "__main__":
 	for port in allPorts:
 		thread = Thread(target = scanPort, args = (hostIP, port))
 		thread.start()
+		thread.join()
+
+	if len(listeningPorts) > 0:
+		print("\n\n ***************** LISTENING PORTS ***************** ")
+		for port in listeningPorts:
+			print("\n  - %s (%s) --> %s" % (port.service, port.portNum, port.details))
+		print(" *************************************************** \n")
+	else:
+		print("\n No listening ports found \n")
