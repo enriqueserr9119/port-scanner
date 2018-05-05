@@ -50,6 +50,7 @@ def scanPort(hostIP, port):
 
 	# Create socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.settimeout(5)
 
 	# Check if port is listening
 	if s.connect_ex((hostIP, int(port.portNum))) == 0:
@@ -106,11 +107,17 @@ if __name__ == "__main__":
 			allPorts.append(port)
 
 	# Check which well-known ports are listening
+	threads = []
 	for port in allPorts:
 		thread = Thread(target = scanPort, args = (hostIP, port))
 		thread.start()
+		threads.append(thread)
+
+	# Concurrency
+	for thread in threads:
 		thread.join()
 
+	# Show result
 	if len(listeningPorts) > 0:
 		print("\n\n ***************** LISTENING PORTS ***************** ")
 		for port in listeningPorts:
