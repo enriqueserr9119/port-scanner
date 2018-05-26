@@ -1,6 +1,6 @@
 # Port Scanner
 
-Simple and easy to use tool to scan for hosts listening ports.
+Simple and easy to use tool to scan for listening ports.
 
 
 ## Prerequisites

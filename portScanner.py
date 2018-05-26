@@ -2,7 +2,7 @@
 	File name: portScanner.py
 	Author: Enrique Serrano, Javier Artiga
 	Date created: 04/15/2018
-	Date last modified: 04/15/2018
+	Date last modified: 05/26/2018
 	Python version: 2.7
 
 	All code in this project is provided for illustrative and educational purposes only. The code has not been thoroughly tested under all conditions.
@@ -11,18 +11,13 @@
 	You can redistribute it and/or modify it under your responsability.
 """
 
-#TODO: apparently some scanPort threads never end. why?
-
 import socket
-import urllib2
-import os
 import re
 import sys
 import time
 import subprocess
 from threading import Thread
 import csv
-import portHtmlParser
 
 class Port:
 	"""
